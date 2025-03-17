@@ -1,12 +1,73 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import StartScreen from "@/components/StartScreen";
+import PlayerSelection from "@/components/PlayerSelection";
+import GameBoard from "@/components/GameBoard";
+import TruthDare from "@/components/TruthDare";
+
+type Player = {
+  id: number;
+  name: string;
+  mood: "angry" | "sad" | "happy" | "neutral";
+  symbol: string;
+};
+
+type GameState = "start" | "selection" | "playing" | "end";
 
 const Index = () => {
+  const [gameState, setGameState] = useState<GameState>("start");
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [winner, setWinner] = useState<Player | null>(null);
+  const [losers, setLosers] = useState<Player[]>([]);
+
+  const handleStartGame = () => {
+    setGameState("selection");
+  };
+
+  const handlePlayerSelection = (selectedPlayers: Player[]) => {
+    setPlayers(selectedPlayers);
+    setGameState("playing");
+  };
+
+  const handleGameEnd = (winner: Player | null, losers: Player[]) => {
+    setWinner(winner);
+    setLosers(losers);
+    setGameState("end");
+  };
+
+  const handleNewGame = () => {
+    setGameState("selection");
+    setWinner(null);
+    setLosers([]);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-white via-purple-50 to-blue-50">
+      <AnimatePresence mode="wait">
+        {gameState === "start" && (
+          <StartScreen key="start-screen" onStart={handleStartGame} />
+        )}
+        
+        {gameState === "selection" && (
+          <PlayerSelection key="player-selection" onStart={handlePlayerSelection} />
+        )}
+        
+        {gameState === "playing" && (
+          <div key="game-board" className="min-h-screen w-full py-12 px-4">
+            <GameBoard players={players} onGameEnd={handleGameEnd} />
+          </div>
+        )}
+        
+        {gameState === "end" && (
+          <TruthDare
+            key="truth-dare"
+            winner={winner}
+            losers={losers}
+            onNewGame={handleNewGame}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
