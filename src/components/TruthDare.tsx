@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Shuffle, MessageSquare, Send } from "lucide-react";
+import { Shuffle, MessageSquare, Send, ArrowRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import WinnerAnnouncement from "./WinnerAnnouncement";
+import { useToast } from "@/hooks/use-toast";
 
 type Player = {
   id: number;
@@ -48,19 +49,30 @@ const dares = [
 ];
 
 const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
+  const { toast } = useToast();
   const [gameMode, setGameMode] = useState<"waiting" | "group" | "individual">("waiting");
   const [currentLoser, setCurrentLoser] = useState<Player | null>(null);
   const [selectedType, setSelectedType] = useState<"truth" | "dare" | null>(null);
   const [challenge, setChallenge] = useState<string>("");
   const [answer, setAnswer] = useState<string>("");
-  const [answers, setAnswers] = useState<{ player: Player; answer: string }[]>([]);
+  const [answers, setAnswers] = useState<{ player: Player; answer: string; type: "truth" | "dare" }[]>([]);
   const [answering, setAnswering] = useState<boolean>(false);
+  const [completedChallenges, setCompletedChallenges] = useState<number>(0);
+
+  const showGroupOption = losers.length > 2; // Only show group option if there are more than 2 losers
 
   const handleGameModeSelect = (mode: "group" | "individual") => {
     setGameMode(mode);
     if (mode === "individual" && losers.length > 0) {
       setCurrentLoser(losers[0]);
     }
+    
+    toast({
+      title: mode === "group" ? "Group Challenge Started" : "Individual Challenges Started",
+      description: mode === "group" 
+        ? "Everyone will participate in the same challenge" 
+        : "Each player will face their own challenge"
+    });
   };
 
   const handleTypeSelect = (type: "truth" | "dare") => {
@@ -69,15 +81,33 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
     setAnswering(type === "truth");
+    
+    toast({
+      title: type === "truth" ? "Truth Selected" : "Dare Selected",
+      description: type === "truth" 
+        ? "Answer honestly!" 
+        : "Time to be brave!"
+    });
   };
 
   const handleSubmitAnswer = () => {
-    if (!answer.trim() || !currentLoser) return;
+    if (!answer.trim() || !currentLoser || !selectedType) return;
     
-    const newAnswers = [...answers, { player: currentLoser, answer: answer.trim() }];
+    const newAnswers = [...answers, { 
+      player: currentLoser, 
+      answer: answer.trim(),
+      type: selectedType
+    }];
+    
     setAnswers(newAnswers);
     setAnswer("");
     setAnswering(false);
+    setCompletedChallenges(prev => prev + 1);
+    
+    toast({
+      title: "Answer Submitted",
+      description: `${currentLoser.name} completed their ${selectedType}!`
+    });
   };
 
   const handleNext = () => {
@@ -86,6 +116,10 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const currentIndex = losers.findIndex(p => p.id === currentLoser.id);
     if (currentIndex === losers.length - 1) {
       // Last loser, go back to waiting state
+      toast({
+        title: "All Challenges Completed",
+        description: "Everyone has faced their truth or dare!"
+      });
       onNewGame();
     } else {
       // Move to next loser
@@ -104,14 +138,51 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setChallenge(randomChallenge);
     setAnswering(selectedType === "truth");
     setAnswer("");
+    
+    toast({
+      title: "New Challenge",
+      description: "Try this one instead!"
+    });
   };
 
   const handleSubmitGroupAnswer = () => {
-    if (!answer.trim()) return;
+    if (!answer.trim() || !selectedType) return;
     // For group mode, we just show the answer was submitted
     setAnswer("");
     setAnswering(false);
+    setCompletedChallenges(prev => prev + 1);
+    
+    toast({
+      title: "Group Challenge Completed",
+      description: selectedType === "truth" 
+        ? "Thanks for sharing with the group!" 
+        : "Great job completing the dare!"
+    });
   };
+
+  const handleSkipChallenge = () => {
+    if (gameMode === "individual" && currentLoser) {
+      toast({
+        title: "Challenge Skipped",
+        description: `${currentLoser.name} skipped their challenge`
+      });
+      handleNext();
+    } else {
+      setSelectedType(null);
+      setChallenge("");
+      setAnswer("");
+      setAnswering(false);
+      
+      toast({
+        title: "Challenge Skipped",
+        description: "Moving on..."
+      });
+    }
+  };
+
+  const progressPercentage = gameMode === "individual" 
+    ? ((losers.findIndex(p => p.id === currentLoser?.id) + 1) / losers.length) * 100
+    : (completedChallenges / losers.length) * 100;
 
   return (
     <motion.div
@@ -170,14 +241,16 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
           >
             <h2 className="text-2xl font-bold mb-6">Choose Truth or Dare Mode</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleGameModeSelect("group")}
-                className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4"
-              >
-                Group Challenge
-              </motion.button>
+              {showGroupOption && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleGameModeSelect("group")}
+                  className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4"
+                >
+                  Group Challenge
+                </motion.button>
+              )}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
@@ -282,14 +355,23 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   </div>
                 </div>
                 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={onNewGame}
-                  className="mt-8 bg-gradient-to-r from-starry-blue to-starry-purple text-white font-medium px-8 py-3 rounded-xl hover:opacity-90 transition-all shadow-glow-md hover:shadow-glow-lg"
-                >
-                  New Game
-                </motion.button>
+                <div className="flex gap-3 justify-center mt-8">
+                  <Button 
+                    onClick={handleSkipChallenge}
+                    variant="outline"
+                    className="bg-white/70 border-none"
+                  >
+                    Skip
+                  </Button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onNewGame}
+                    className="bg-gradient-to-r from-starry-blue to-starry-purple text-white font-medium px-8 py-3 rounded-xl hover:opacity-90 transition-all shadow-glow-md hover:shadow-glow-lg"
+                  >
+                    New Game
+                  </motion.button>
+                </div>
               </div>
             )}
           </motion.div>
@@ -409,22 +491,36 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                     <div 
                       className="bg-gradient-to-r from-starry-blue to-starry-purple h-full"
                       style={{ 
-                        width: `${((losers.findIndex(p => p.id === currentLoser.id) + 1) / losers.length) * 100}%` 
+                        width: `${progressPercentage}%` 
                       }}
                     />
                   </div>
                 </div>
                 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNext}
-                  className="mt-8 bg-gradient-to-r from-starry-blue to-starry-purple text-white font-medium px-8 py-3 rounded-xl hover:opacity-90 transition-all shadow-glow-md hover:shadow-glow-lg"
-                >
-                  {losers.findIndex(p => p.id === currentLoser.id) === losers.length - 1 
-                    ? "New Game" 
-                    : "Next Player"}
-                </motion.button>
+                <div className="flex gap-3 justify-center mt-8">
+                  <Button 
+                    onClick={handleSkipChallenge}
+                    variant="outline"
+                    className="bg-white/70 border-none"
+                  >
+                    Skip
+                  </Button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleNext}
+                    className="bg-gradient-to-r from-starry-blue to-starry-purple text-white font-medium px-8 py-3 rounded-xl hover:opacity-90 transition-all shadow-glow-md hover:shadow-glow-lg flex items-center gap-2"
+                  >
+                    {losers.findIndex(p => p.id === currentLoser.id) === losers.length - 1 
+                      ? "New Game" 
+                      : (
+                        <>
+                          Next Player <ArrowRight size={16} />
+                        </>
+                      )
+                    }
+                  </motion.button>
+                </div>
               </div>
             )}
           </motion.div>

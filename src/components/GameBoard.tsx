@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 type Player = {
   id: number;
@@ -12,23 +13,26 @@ type Player = {
 
 type GameBoardProps = {
   players: Player[];
-  onGameEnd: (winner: Player | null, losers: Player[]) => void;
+  onGameEnd: (winner: Player | null, activePlayers: Player[]) => void;
 };
 
 const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
+  const { toast } = useToast();
   const boardSize = players.length <= 3 ? 3 : players.length <= 5 ? 4 : 5;
   const [board, setBoard] = useState<(Player | null)[][]>(
     Array(boardSize).fill(null).map(() => Array(boardSize).fill(null))
   );
   const [currentPlayer, setCurrentPlayer] = useState<Player>(players[0]);
   const [winner, setWinner] = useState<Player | null>(null);
-  const winningLength = Math.min(4, boardSize);
+  const [moves, setMoves] = useState<number>(0);
+  const winningLength = 4; // Fixed at 4 for the 4-in-a-row win condition
 
   // Reset the game when players change
   useEffect(() => {
     setBoard(Array(boardSize).fill(null).map(() => Array(boardSize).fill(null)));
     setCurrentPlayer(players[0]);
     setWinner(null);
+    setMoves(0);
   }, [players, boardSize]);
 
   const checkLineForWin = (line: (Player | null)[]) => {
@@ -110,15 +114,32 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
     const newBoard = [...board];
     newBoard[row][col] = currentPlayer;
     setBoard(newBoard);
+    setMoves(moves + 1);
 
+    // Check for win
     if (checkWinner(newBoard, row, col, currentPlayer)) {
       setWinner(currentPlayer);
-      const losers = players.filter(player => player.id !== currentPlayer.id);
-      onGameEnd(currentPlayer, losers);
+      toast({
+        title: "Game Over!",
+        description: `${currentPlayer.name} wins the game!`
+      });
+      
+      // Get the active players at the end of the game
+      // This includes everyone who was still in the game when it ended
+      const remainingPlayers = players.filter(player => 
+        player.id !== currentPlayer.id
+      );
+      
+      onGameEnd(currentPlayer, remainingPlayers);
       return;
     }
 
+    // Check for draw
     if (isBoardFull()) {
+      toast({
+        title: "Game Over!",
+        description: "It's a draw!"
+      });
       onGameEnd(null, players);
       return;
     }
@@ -174,6 +195,28 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
             {currentPlayer.symbol}
           </span>
         </motion.h2>
+      </div>
+
+      <div className="mb-4 text-center">
+        <div className="flex justify-center gap-3 mb-2 flex-wrap">
+          {players.map((player) => (
+            <div
+              key={player.id}
+              className={cn(
+                "px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 transition-all",
+                player.id === currentPlayer.id
+                  ? "bg-white shadow-glow-sm"
+                  : "bg-white/50"
+              )}
+            >
+              {player.name}{" "}
+              <span className={getMoodColor(player.mood)}>{player.symbol}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-sm text-gray-500">
+          Win Condition: Get <span className="font-bold text-starry-purple">4 in a row</span>!
+        </p>
       </div>
 
       <motion.div

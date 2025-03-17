@@ -30,8 +30,16 @@ const Index = () => {
     setGameState("playing");
   };
 
-  const handleGameEnd = (winner: Player | null, losers: Player[]) => {
+  const handleGameEnd = (winner: Player | null, activePlayers: Player[]) => {
     setWinner(winner);
+    
+    // Determine losers: all players except the winner
+    // This includes players who were still in the game when it ended
+    // as well as those who didn't get to play their final turn
+    const losers = players.filter(player => 
+      player.id !== (winner?.id || -1)
+    );
+    
     setLosers(losers);
     setGameState("end");
   };
