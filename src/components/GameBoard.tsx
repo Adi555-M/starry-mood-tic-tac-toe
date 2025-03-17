@@ -22,6 +22,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
   );
   const [currentPlayer, setCurrentPlayer] = useState<Player>(players[0]);
   const [winner, setWinner] = useState<Player | null>(null);
+  const winningLength = Math.min(4, boardSize);
 
   // Reset the game when players change
   useEffect(() => {
@@ -30,39 +31,70 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
     setWinner(null);
   }, [players, boardSize]);
 
+  const checkLineForWin = (line: (Player | null)[]) => {
+    if (line.length < winningLength) return false;
+    
+    for (let i = 0; i <= line.length - winningLength; i++) {
+      let streak = true;
+      const playerId = line[i]?.id;
+      
+      if (playerId === undefined) continue;
+      
+      for (let j = 1; j < winningLength; j++) {
+        if (line[i + j]?.id !== playerId) {
+          streak = false;
+          break;
+        }
+      }
+      
+      if (streak) return true;
+    }
+    
+    return false;
+  };
+
   const checkWinner = (board: (Player | null)[][], row: number, col: number, player: Player) => {
     // Check row
-    if (board[row].every(cell => cell?.id === player.id)) {
+    if (checkLineForWin(board[row])) {
       return true;
     }
 
     // Check column
-    if (board.every(r => r[col]?.id === player.id)) {
+    const column = board.map(r => r[col]);
+    if (checkLineForWin(column)) {
       return true;
     }
 
     // Check diagonal (top-left to bottom-right)
-    if (row === col) {
-      let diagonal = true;
-      for (let i = 0; i < boardSize; i++) {
-        if (board[i][i]?.id !== player.id) {
-          diagonal = false;
-          break;
-        }
+    const diagonal1: (Player | null)[] = [];
+    const startRow = Math.max(0, row - col);
+    const startCol = Math.max(0, col - row);
+    for (let i = 0; i < boardSize; i++) {
+      const r = startRow + i;
+      const c = startCol + i;
+      if (r < boardSize && c < boardSize) {
+        diagonal1.push(board[r][c]);
       }
-      if (diagonal) return true;
+    }
+    
+    if (checkLineForWin(diagonal1)) {
+      return true;
     }
 
     // Check diagonal (top-right to bottom-left)
-    if (row + col === boardSize - 1) {
-      let diagonal = true;
-      for (let i = 0; i < boardSize; i++) {
-        if (board[i][boardSize - 1 - i]?.id !== player.id) {
-          diagonal = false;
-          break;
-        }
+    const diagonal2: (Player | null)[] = [];
+    const startRow2 = Math.max(0, row - (boardSize - 1 - col));
+    const startCol2 = Math.min(boardSize - 1, col + row);
+    for (let i = 0; i < boardSize; i++) {
+      const r = startRow2 + i;
+      const c = startCol2 - i;
+      if (r < boardSize && c >= 0) {
+        diagonal2.push(board[r][c]);
       }
-      if (diagonal) return true;
+    }
+    
+    if (checkLineForWin(diagonal2)) {
+      return true;
     }
 
     return false;

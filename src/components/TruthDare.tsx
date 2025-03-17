@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Shuffle } from "lucide-react";
+import { Shuffle, MessageSquare, Send } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import WinnerAnnouncement from "./WinnerAnnouncement";
 
 type Player = {
   id: number;
@@ -49,6 +52,9 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const [currentLoser, setCurrentLoser] = useState<Player | null>(null);
   const [selectedType, setSelectedType] = useState<"truth" | "dare" | null>(null);
   const [challenge, setChallenge] = useState<string>("");
+  const [answer, setAnswer] = useState<string>("");
+  const [answers, setAnswers] = useState<{ player: Player; answer: string }[]>([]);
+  const [answering, setAnswering] = useState<boolean>(false);
 
   const handleGameModeSelect = (mode: "group" | "individual") => {
     setGameMode(mode);
@@ -62,6 +68,16 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const options = type === "truth" ? truths : dares;
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
+    setAnswering(type === "truth");
+  };
+
+  const handleSubmitAnswer = () => {
+    if (!answer.trim() || !currentLoser) return;
+    
+    const newAnswers = [...answers, { player: currentLoser, answer: answer.trim() }];
+    setAnswers(newAnswers);
+    setAnswer("");
+    setAnswering(false);
   };
 
   const handleNext = () => {
@@ -76,6 +92,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       setCurrentLoser(losers[currentIndex + 1]);
       setSelectedType(null);
       setChallenge("");
+      setAnswer("");
+      setAnswering(false);
     }
   };
 
@@ -84,6 +102,15 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const options = selectedType === "truth" ? truths : dares;
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
+    setAnswering(selectedType === "truth");
+    setAnswer("");
+  };
+
+  const handleSubmitGroupAnswer = () => {
+    if (!answer.trim()) return;
+    // For group mode, we just show the answer was submitted
+    setAnswer("");
+    setAnswering(false);
   };
 
   return (
@@ -93,6 +120,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       exit={{ opacity: 0 }}
       className="w-full max-w-3xl mx-auto p-6"
     >
+      {winner && <WinnerAnnouncement winner={winner} />}
+
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -210,6 +239,35 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   </button>
                 </motion.div>
                 
+                {answering && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-8"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="relative">
+                        <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
+                        <Textarea
+                          placeholder="Enter your answer..."
+                          className="pl-10 resize-none"
+                          value={answer}
+                          onChange={(e) => setAnswer(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSubmitGroupAnswer}
+                          className="bg-starry-purple text-white flex items-center gap-2"
+                        >
+                          Submit <Send size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                
                 <div className="mt-6">
                   <p className="text-sm text-gray-500 mb-2">Losers</p>
                   <div className="flex flex-wrap gap-2 justify-center">
@@ -300,6 +358,48 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                     <Shuffle size={16} />
                   </button>
                 </motion.div>
+                
+                {answering && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-8"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="relative">
+                        <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
+                        <Textarea
+                          placeholder="Enter your answer..."
+                          className="pl-10 resize-none"
+                          value={answer}
+                          onChange={(e) => setAnswer(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex justify-end">
+                        <Button 
+                          onClick={handleSubmitAnswer}
+                          className="bg-starry-purple text-white flex items-center gap-2"
+                        >
+                          Submit <Send size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+                
+                {answers.length > 0 && answers.some(a => a.player.id === currentLoser.id) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 bg-white/50 rounded-lg"
+                  >
+                    <p className="text-sm text-gray-500 mb-1">Your Answer:</p>
+                    <p className="text-lg">
+                      {answers.find(a => a.player.id === currentLoser.id)?.answer}
+                    </p>
+                  </motion.div>
+                )}
                 
                 <div className="mt-6">
                   <p className="text-sm text-gray-500 mb-2">
