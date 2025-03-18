@@ -77,7 +77,7 @@ const Index = () => {
 
       {/* Credits Section */}
       <div className="w-full text-center py-4 text-gray-500 text-sm absolute bottom-0 left-0 right-0 bg-transparent">
-        Created by Aaditya Mehta
+        Created by Aaditya Mehta & MARB
       </div>
     </div>
   );

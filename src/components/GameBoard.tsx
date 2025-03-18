@@ -172,6 +172,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
     }
   };
 
+  const getMoodBackground = (mood: Player["mood"]) => {
+    switch (mood) {
+      case "angry": return "bg-red-100";
+      case "sad": return "bg-gray-100";
+      case "happy": return "bg-yellow-100";
+      case "neutral": return "bg-blue-100";
+      default: return "bg-white/50";
+    }
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div className="mb-6 text-center">
@@ -243,7 +253,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
                 "aspect-square flex items-center justify-center rounded-xl text-4xl sm:text-5xl md:text-6xl",
                 "glass-card transition-all duration-300 border-2 border-black/10",
                 cell ? getMoodGlow(cell.mood) : "hover:shadow-glow-sm",
-                cell ? getMoodColor(cell.mood) : "text-gray-300"
+                cell ? getMoodColor(cell.mood) : "text-gray-300",
+                cell ? getMoodBackground(cell.mood) : "bg-white/50"
               )}
             >
               {cell ? (
