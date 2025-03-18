@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Shuffle, MessageSquare, Send, ArrowRight } from "lucide-react";
+import { Shuffle, MessageSquare, Send, ArrowRight, X, AlertCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import WinnerAnnouncement from "./WinnerAnnouncement";
@@ -58,6 +58,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const [answers, setAnswers] = useState<{ player: Player; answer: string; type: "truth" | "dare" }[]>([]);
   const [answering, setAnswering] = useState<boolean>(false);
   const [completedChallenges, setCompletedChallenges] = useState<number>(0);
+  const [isAnswerRejected, setIsAnswerRejected] = useState<boolean>(false);
+  const [dareAfterTruth, setDareAfterTruth] = useState<boolean>(false);
 
   const showGroupOption = losers.length > 2; // Only show group option if there are more than 2 losers
 
@@ -81,6 +83,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
     setAnswering(type === "truth");
+    setIsAnswerRejected(false);
+    setDareAfterTruth(false);
     
     toast({
       title: type === "truth" ? "Truth Selected" : "Dare Selected",
@@ -93,6 +97,17 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const handleSubmitAnswer = () => {
     if (!answer.trim() || !currentLoser || !selectedType) return;
     
+    // Simple check for low-effort answers
+    if (selectedType === "truth" && (answer.length < 10 || /^(yes|no|maybe|idk|i don't know)$/i.test(answer.trim()))) {
+      setIsAnswerRejected(true);
+      toast({
+        title: "Answer Rejected",
+        description: "Your answer doesn't seem detailed enough. Try again or face a dare instead!",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const newAnswers = [...answers, { 
       player: currentLoser, 
       answer: answer.trim(),
@@ -103,6 +118,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setAnswer("");
     setAnswering(false);
     setCompletedChallenges(prev => prev + 1);
+    setIsAnswerRejected(false);
     
     toast({
       title: "Answer Submitted",
@@ -128,6 +144,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       setChallenge("");
       setAnswer("");
       setAnswering(false);
+      setDareAfterTruth(false);
+      setIsAnswerRejected(false);
     }
   };
 
@@ -138,6 +156,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setChallenge(randomChallenge);
     setAnswering(selectedType === "truth");
     setAnswer("");
+    setIsAnswerRejected(false);
     
     toast({
       title: "New Challenge",
@@ -147,10 +166,23 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
 
   const handleSubmitGroupAnswer = () => {
     if (!answer.trim() || !selectedType) return;
+    
+    // Simple check for low-effort answers in group mode
+    if (selectedType === "truth" && (answer.length < 10 || /^(yes|no|maybe|idk|i don't know)$/i.test(answer.trim()))) {
+      setIsAnswerRejected(true);
+      toast({
+        title: "Answer Rejected",
+        description: "Your answer doesn't seem detailed enough. Try again or face a dare instead!",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // For group mode, we just show the answer was submitted
     setAnswer("");
     setAnswering(false);
     setCompletedChallenges(prev => prev + 1);
+    setIsAnswerRejected(false);
     
     toast({
       title: "Group Challenge Completed",
@@ -172,12 +204,30 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       setChallenge("");
       setAnswer("");
       setAnswering(false);
+      setIsAnswerRejected(false);
+      setDareAfterTruth(false);
       
       toast({
         title: "Challenge Skipped",
         description: "Moving on..."
       });
     }
+  };
+
+  const handleSwitchToDare = () => {
+    // Switch from truth to dare if answer is rejected
+    setSelectedType("dare");
+    const randomDare = dares[Math.floor(Math.random() * dares.length)];
+    setChallenge(randomDare);
+    setAnswer("");
+    setAnswering(false);
+    setIsAnswerRejected(false);
+    setDareAfterTruth(true);
+    
+    toast({
+      title: "Switched to Dare",
+      description: "You must complete this dare now!"
+    });
   };
 
   const progressPercentage = gameMode === "individual" 
@@ -301,7 +351,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative"
                 >
                   <div className="absolute -top-3 -left-3 bg-starry-purple text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {selectedType === "truth" ? "Truth" : "Dare"}
+                    {dareAfterTruth ? "Dare (After Truth)" : (selectedType === "truth" ? "Truth" : "Dare")}
                   </div>
                   <p className="text-xl font-medium">{challenge}</p>
                   <button
@@ -323,11 +373,27 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                       <div className="relative">
                         <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
                         <Textarea
-                          placeholder="Enter your answer..."
-                          className="pl-10 resize-none"
+                          placeholder="Enter your answer... (be detailed and honest!)"
+                          className={`pl-10 resize-none ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : ''}`}
                           value={answer}
                           onChange={(e) => setAnswer(e.target.value)}
                         />
+                        {isAnswerRejected && (
+                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle size={16} />
+                              <span>Your answer doesn't seem honest or detailed enough</span>
+                            </div>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={handleSwitchToDare}
+                              className="text-xs"
+                            >
+                              Switch to Dare
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex justify-end">
                         <Button 
@@ -430,7 +496,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative"
                 >
                   <div className="absolute -top-3 -left-3 bg-starry-purple text-white text-sm font-bold px-3 py-1 rounded-full">
-                    {selectedType === "truth" ? "Truth" : "Dare"}
+                    {dareAfterTruth ? "Dare (After Truth)" : (selectedType === "truth" ? "Truth" : "Dare")}
                   </div>
                   <p className="text-xl font-medium">{challenge}</p>
                   <button
@@ -452,11 +518,27 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                       <div className="relative">
                         <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
                         <Textarea
-                          placeholder="Enter your answer..."
-                          className="pl-10 resize-none"
+                          placeholder="Enter your answer... (be detailed and honest!)"
+                          className={`pl-10 resize-none ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : ''}`}
                           value={answer}
                           onChange={(e) => setAnswer(e.target.value)}
                         />
+                        {isAnswerRejected && (
+                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle size={16} />
+                              <span>Your answer doesn't seem honest or detailed enough</span>
+                            </div>
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={handleSwitchToDare}
+                              className="text-xs"
+                            >
+                              Switch to Dare
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       <div className="flex justify-end">
                         <Button 

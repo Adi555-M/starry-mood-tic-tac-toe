@@ -85,9 +85,9 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1 }}
-          className="glass-card max-w-2xl w-full mb-8 p-6 text-left"
+          className="glass-card max-w-2xl w-full mb-8 p-6 text-left bg-white/70 backdrop-blur-lg shadow-lg"
         >
-          <h2 className="text-2xl font-bold mb-4 text-center">How to Play</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">How to Play</h2>
           <ul className="space-y-3 text-gray-800">
             <li className="flex items-start">
               <span className="inline-flex items-center justify-center bg-starry-purple/20 text-starry-purple h-6 w-6 rounded-full text-sm mr-2 mt-0.5">1</span>
