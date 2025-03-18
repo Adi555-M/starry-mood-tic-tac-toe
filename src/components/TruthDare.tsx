@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Shuffle, MessageSquare, Send, ArrowRight, X, AlertCircle } from "lucide-react";
+import { Shuffle, MessageSquare, Send, ArrowRight, AlertCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import WinnerAnnouncement from "./WinnerAnnouncement";
@@ -60,8 +60,10 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const [completedChallenges, setCompletedChallenges] = useState<number>(0);
   const [isAnswerRejected, setIsAnswerRejected] = useState<boolean>(false);
   const [dareAfterTruth, setDareAfterTruth] = useState<boolean>(false);
+  const [answeredTruth, setAnsweredTruth] = useState<boolean>(false);
 
-  const showGroupOption = losers.length > 2; // Only show group option if there are more than 2 losers
+  // Only show group option if there are more than 2 losers
+  const showGroupOption = losers.length > 2;
 
   const handleGameModeSelect = (mode: "group" | "individual") => {
     setGameMode(mode);
@@ -85,6 +87,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setAnswering(type === "truth");
     setIsAnswerRejected(false);
     setDareAfterTruth(false);
+    setAnsweredTruth(false);
     
     toast({
       title: type === "truth" ? "Truth Selected" : "Dare Selected",
@@ -94,11 +97,21 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     });
   };
 
+  const validateTruthAnswer = (answer: string): boolean => {
+    // Simple check for low-effort answers
+    if (answer.length < 10) return false;
+    
+    // Check for one-word or very simple answers
+    if (/^(yes|no|maybe|idk|i don't know)$/i.test(answer.trim())) return false;
+    
+    return true;
+  };
+
   const handleSubmitAnswer = () => {
     if (!answer.trim() || !currentLoser || !selectedType) return;
     
-    // Simple check for low-effort answers
-    if (selectedType === "truth" && (answer.length < 10 || /^(yes|no|maybe|idk|i don't know)$/i.test(answer.trim()))) {
+    // Validate truth answers
+    if (selectedType === "truth" && !validateTruthAnswer(answer)) {
       setIsAnswerRejected(true);
       toast({
         title: "Answer Rejected",
@@ -119,10 +132,12 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setAnswering(false);
     setCompletedChallenges(prev => prev + 1);
     setIsAnswerRejected(false);
+    setAnsweredTruth(selectedType === "truth");
     
     toast({
       title: "Answer Submitted",
-      description: `${currentLoser.name} completed their ${selectedType}!`
+      description: `${currentLoser.name} completed their ${selectedType}!`,
+      variant: "success"
     });
   };
 
@@ -146,6 +161,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       setAnswering(false);
       setDareAfterTruth(false);
       setIsAnswerRejected(false);
+      setAnsweredTruth(false);
     }
   };
 
@@ -167,8 +183,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const handleSubmitGroupAnswer = () => {
     if (!answer.trim() || !selectedType) return;
     
-    // Simple check for low-effort answers in group mode
-    if (selectedType === "truth" && (answer.length < 10 || /^(yes|no|maybe|idk|i don't know)$/i.test(answer.trim()))) {
+    // Validate truth answers for group mode as well
+    if (selectedType === "truth" && !validateTruthAnswer(answer)) {
       setIsAnswerRejected(true);
       toast({
         title: "Answer Rejected",
@@ -183,12 +199,14 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     setAnswering(false);
     setCompletedChallenges(prev => prev + 1);
     setIsAnswerRejected(false);
+    setAnsweredTruth(selectedType === "truth");
     
     toast({
       title: "Group Challenge Completed",
       description: selectedType === "truth" 
         ? "Thanks for sharing with the group!" 
-        : "Great job completing the dare!"
+        : "Great job completing the dare!",
+      variant: "success"
     });
   };
 
@@ -206,6 +224,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       setAnswering(false);
       setIsAnswerRejected(false);
       setDareAfterTruth(false);
+      setAnsweredTruth(false);
       
       toast({
         title: "Challenge Skipped",
@@ -287,7 +306,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="glass-card p-6 text-center"
+            className="glass-card p-6 text-center border-2 border-black/5"
           >
             <h2 className="text-2xl font-bold mb-6">Choose Truth or Dare Mode</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -296,7 +315,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleGameModeSelect("group")}
-                  className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4"
+                  className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4 border border-black/5"
                 >
                   Group Challenge
                 </motion.button>
@@ -305,7 +324,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleGameModeSelect("individual")}
-                className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4"
+                className="glass-button bg-starry-purple/10 hover:bg-starry-purple/20 text-starry-purple px-8 py-4 border border-black/5"
               >
                 Individual Challenges
               </motion.button>
@@ -319,7 +338,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="glass-card p-6 text-center"
+            className="glass-card p-6 text-center border-2 border-black/5"
           >
             <h2 className="text-2xl font-bold mb-2">Group Challenge</h2>
             <p className="text-gray-600 mb-6">All losers must participate in this challenge</p>
@@ -330,7 +349,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleTypeSelect("truth")}
-                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4"
+                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4 border border-black/5"
                 >
                   Truth
                 </motion.button>
@@ -338,7 +357,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleTypeSelect("dare")}
-                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4"
+                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4 border border-black/5"
                 >
                   Dare
                 </motion.button>
@@ -348,7 +367,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative"
+                  className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative border-2 border-black/5"
                 >
                   <div className="absolute -top-3 -left-3 bg-starry-purple text-white text-sm font-bold px-3 py-1 rounded-full">
                     {dareAfterTruth ? "Dare (After Truth)" : (selectedType === "truth" ? "Truth" : "Dare")}
@@ -356,7 +375,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   <p className="text-xl font-medium">{challenge}</p>
                   <button
                     onClick={handleNewChallenge}
-                    className="absolute -bottom-3 -right-3 bg-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100"
+                    className="absolute -bottom-3 -right-3 bg-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 border border-black/5"
                   >
                     <Shuffle size={16} />
                   </button>
@@ -374,12 +393,12 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                         <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
                         <Textarea
                           placeholder="Enter your answer... (be detailed and honest!)"
-                          className={`pl-10 resize-none ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : ''}`}
+                          className={`pl-10 resize-none border-2 ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : 'border-black/5'}`}
                           value={answer}
                           onChange={(e) => setAnswer(e.target.value)}
                         />
                         {isAnswerRejected && (
-                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm">
+                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm border border-red-200">
                             <div className="flex items-center gap-2">
                               <AlertCircle size={16} />
                               <span>Your answer doesn't seem honest or detailed enough</span>
@@ -407,13 +426,24 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   </motion.div>
                 )}
                 
+                {answeredTruth && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200 text-green-700"
+                  >
+                    <p className="font-medium">Truth answer submitted successfully!</p>
+                    <p className="text-sm">Good job being honest!</p>
+                  </motion.div>
+                )}
+                
                 <div className="mt-6">
                   <p className="text-sm text-gray-500 mb-2">Losers</p>
                   <div className="flex flex-wrap gap-2 justify-center">
                     {losers.map(loser => (
                       <div 
                         key={loser.id}
-                        className="px-3 py-1 rounded-full bg-white/70 text-sm font-medium flex items-center gap-1"
+                        className="px-3 py-1 rounded-full bg-white/70 text-sm font-medium flex items-center gap-1 border border-black/5"
                       >
                         {loser.name} <span>{loser.symbol}</span>
                       </div>
@@ -449,7 +479,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="glass-card p-6 text-center"
+            className="glass-card p-6 text-center border-2 border-black/5"
           >
             <h2 className="text-2xl font-bold mb-2">
               {currentLoser.name}'s Challenge
@@ -475,7 +505,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleTypeSelect("truth")}
-                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4"
+                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4 border border-black/5"
                 >
                   Truth
                 </motion.button>
@@ -483,7 +513,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleTypeSelect("dare")}
-                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4"
+                  className="glass-button bg-starry-blue/10 hover:bg-starry-blue/20 text-starry-blue px-8 py-4 border border-black/5"
                 >
                   Dare
                 </motion.button>
@@ -493,7 +523,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative"
+                  className="mb-8 p-6 bg-white/70 rounded-lg shadow-lg relative border-2 border-black/5"
                 >
                   <div className="absolute -top-3 -left-3 bg-starry-purple text-white text-sm font-bold px-3 py-1 rounded-full">
                     {dareAfterTruth ? "Dare (After Truth)" : (selectedType === "truth" ? "Truth" : "Dare")}
@@ -501,7 +531,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   <p className="text-xl font-medium">{challenge}</p>
                   <button
                     onClick={handleNewChallenge}
-                    className="absolute -bottom-3 -right-3 bg-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100"
+                    className="absolute -bottom-3 -right-3 bg-white w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 border border-black/5"
                   >
                     <Shuffle size={16} />
                   </button>
@@ -519,12 +549,12 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                         <MessageSquare className="absolute left-3 top-3 text-gray-400" size={18} />
                         <Textarea
                           placeholder="Enter your answer... (be detailed and honest!)"
-                          className={`pl-10 resize-none ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : ''}`}
+                          className={`pl-10 resize-none border-2 ${isAnswerRejected ? 'border-red-500 focus:ring-red-500' : 'border-black/5'}`}
                           value={answer}
                           onChange={(e) => setAnswer(e.target.value)}
                         />
                         {isAnswerRejected && (
-                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm">
+                          <div className="flex justify-between items-center mt-2 p-2 bg-red-50 text-red-600 rounded text-sm border border-red-200">
                             <div className="flex items-center gap-2">
                               <AlertCircle size={16} />
                               <span>Your answer doesn't seem honest or detailed enough</span>
@@ -552,11 +582,22 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                   </motion.div>
                 )}
                 
+                {answeredTruth && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200 text-green-700"
+                  >
+                    <p className="font-medium">Truth answer submitted successfully!</p>
+                    <p className="text-sm">Good job being honest!</p>
+                  </motion.div>
+                )}
+                
                 {answers.length > 0 && answers.some(a => a.player.id === currentLoser.id) && (
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 p-4 bg-white/50 rounded-lg"
+                    className="mb-6 p-4 bg-white/50 rounded-lg border border-black/5"
                   >
                     <p className="text-sm text-gray-500 mb-1">Your Answer:</p>
                     <p className="text-lg">

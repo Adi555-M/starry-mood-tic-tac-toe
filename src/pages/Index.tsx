@@ -34,11 +34,9 @@ const Index = () => {
     setWinner(winner);
     
     // Determine losers: all players except the winner
-    // This includes players who were still in the game when it ended
-    // as well as those who didn't get to play their final turn
-    const losers = players.filter(player => 
-      player.id !== (winner?.id || -1)
-    );
+    const losers = winner 
+      ? players.filter(player => player.id !== winner.id)
+      : players; // In case of a draw, all players are "losers"
     
     setLosers(losers);
     setGameState("end");

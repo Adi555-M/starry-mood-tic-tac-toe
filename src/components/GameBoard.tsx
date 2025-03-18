@@ -25,7 +25,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player>(players[0]);
   const [winner, setWinner] = useState<Player | null>(null);
   const [moves, setMoves] = useState<number>(0);
-  const winningLength = 4; // Fixed at 4 for the 4-in-a-row win condition
+  
+  // Set winning length based on player count, but minimum 3
+  const winningLength = Math.max(3, Math.min(4, players.length - 1));
 
   // Reset the game when players change
   useEffect(() => {
@@ -215,7 +217,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
           ))}
         </div>
         <p className="text-sm text-gray-500">
-          Win Condition: Get <span className="font-bold text-starry-purple">4 in a row</span>!
+          Win Condition: Get <span className="font-bold text-starry-purple">{winningLength} in a row</span>!
         </p>
       </div>
 
@@ -239,7 +241,7 @@ const GameBoard: React.FC<GameBoardProps> = ({ players, onGameEnd }) => {
               onClick={() => handleCellClick(rowIndex, colIndex)}
               className={cn(
                 "aspect-square flex items-center justify-center rounded-xl text-4xl sm:text-5xl md:text-6xl",
-                "glass-card transition-all duration-300",
+                "glass-card transition-all duration-300 border-2 border-black/10",
                 cell ? getMoodGlow(cell.mood) : "hover:shadow-glow-sm",
                 cell ? getMoodColor(cell.mood) : "text-gray-300"
               )}
