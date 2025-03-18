@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import StartScreen from "@/components/StartScreen";
 import PlayerSelection from "@/components/PlayerSelection";
 import GameBoard from "@/components/GameBoard";
@@ -14,12 +14,14 @@ type Player = {
 };
 
 type GameState = "start" | "selection" | "playing" | "end";
+type QuestionType = "personal" | "general";
 
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>("start");
   const [players, setPlayers] = useState<Player[]>([]);
   const [winner, setWinner] = useState<Player | null>(null);
   const [losers, setLosers] = useState<Player[]>([]);
+  const [questionType, setQuestionType] = useState<QuestionType>("personal");
 
   const handleStartGame = () => {
     setGameState("selection");
@@ -71,14 +73,29 @@ const Index = () => {
             winner={winner}
             losers={losers}
             onNewGame={handleNewGame}
+            questionType={questionType}
           />
         )}
       </AnimatePresence>
 
       {/* Credits Section */}
-      <div className="w-full text-center py-4 text-gray-500 text-sm absolute bottom-0 left-0 right-0 bg-transparent">
-        Created by Aaditya Mehta & MARB
-      </div>
+      <motion.div 
+        className="w-full text-center py-4 absolute bottom-0 left-0 right-0 backdrop-blur-sm"
+        initial={{ opacity: 0.5 }}
+        whileHover={{ opacity: 1, backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+        animate={{ 
+          y: [0, 5, 0],
+          transition: { 
+            duration: 5, 
+            repeat: Infinity,
+            repeatType: "reverse" 
+          }
+        }}
+      >
+        <span className="font-semibold text-sm bg-gradient-to-r from-starry-purple to-starry-brightpurple text-transparent bg-clip-text px-3 py-1.5 rounded-full border border-purple-200">
+          Created by Aaditya Mehta & MARB
+        </span>
+      </motion.div>
     </div>
   );
 };

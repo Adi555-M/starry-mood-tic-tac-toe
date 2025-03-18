@@ -1,13 +1,18 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 type StartScreenProps = {
   onStart: () => void;
 };
 
+type QuestionType = "personal" | "general";
+
 const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
+  const [questionType, setQuestionType] = useState<QuestionType>("personal");
+
   // Create an array of random stars for the background effect
   const stars = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -85,36 +90,96 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 1 }}
-          className="glass-card max-w-2xl w-full mb-8 p-6 text-left bg-white/80 backdrop-blur-lg shadow-lg"
+          className="max-w-2xl w-full mb-8"
         >
-          <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">How to Play</h2>
-          <ul className="space-y-3 text-gray-800 font-medium">
-            <li className="flex items-start">
-              <span className="inline-flex items-center justify-center bg-starry-purple/20 text-starry-purple h-6 w-6 rounded-full text-sm mr-2 mt-0.5">1</span>
-              <span>Select the number of players (2-6) and choose a mood for each player</span>
-            </li>
-            <li className="flex items-start">
-              <span className="inline-flex items-center justify-center bg-starry-purple/20 text-starry-purple h-6 w-6 rounded-full text-sm mr-2 mt-0.5">2</span>
-              <span>The board size will automatically adjust based on the number of players</span>
-            </li>
-            <li className="flex items-start">
-              <span className="inline-flex items-center justify-center bg-starry-purple/20 text-starry-purple h-6 w-6 rounded-full text-sm mr-2 mt-0.5">3</span>
-              <span>Take turns placing your symbol on the board to create a line (horizontal, vertical, or diagonal)</span>
-            </li>
-            <li className="flex items-start">
-              <span className="inline-flex items-center justify-center bg-starry-purple/20 text-starry-purple h-6 w-6 rounded-full text-sm mr-2 mt-0.5">4</span>
-              <span>The winner gets a title, while the losers must face truth or dare challenges!</span>
-            </li>
-          </ul>
+          <motion.div
+            className="backdrop-blur-md bg-white/10 rounded-xl p-6 mb-8 border border-white/20 shadow-glow-md"
+            whileHover={{ 
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              transition: { duration: 0.3 }
+            }}
+            initial={{ opacity: 0.7 }}
+            animate={{ 
+              opacity: [0.7, 0.9, 0.7],
+              y: [0, -5, 0]
+            }}
+            transition={{ 
+              duration: 10, 
+              repeat: Infinity,
+              repeatType: "reverse" 
+            }}
+          >
+            <h2 className="text-2xl font-bold mb-4 text-center text-white">How to Play</h2>
+            <ul className="space-y-3 text-white font-medium">
+              <li className="flex items-start">
+                <span className="inline-flex items-center justify-center bg-starry-purple text-white h-6 w-6 rounded-full text-sm mr-2 mt-0.5">1</span>
+                <span>Select the number of players (2-6) and choose a mood for each player</span>
+              </li>
+              <li className="flex items-start">
+                <span className="inline-flex items-center justify-center bg-starry-purple text-white h-6 w-6 rounded-full text-sm mr-2 mt-0.5">2</span>
+                <span>The board size will automatically adjust based on the number of players</span>
+              </li>
+              <li className="flex items-start">
+                <span className="inline-flex items-center justify-center bg-starry-purple text-white h-6 w-6 rounded-full text-sm mr-2 mt-0.5">3</span>
+                <span>Take turns placing your symbol on the board to create a line (horizontal, vertical, or diagonal)</span>
+              </li>
+              <li className="flex items-start">
+                <span className="inline-flex items-center justify-center bg-starry-purple text-white h-6 w-6 rounded-full text-sm mr-2 mt-0.5">4</span>
+                <span>The winner gets a title, while the losers must face truth or dare challenges!</span>
+              </li>
+            </ul>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1.2 }}
+          className="glass-card p-6 rounded-xl bg-white/20 backdrop-blur-md max-w-2xl w-full mb-8"
+        >
+          <h2 className="text-2xl font-bold mb-4 text-center text-white">Question Options</h2>
+          <p className="text-white/90 text-center mb-4">Choose the type of questions for truth or dare challenges:</p>
+          
+          <div className="flex flex-wrap gap-4 justify-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
+                questionType === "personal" 
+                  ? "bg-starry-purple text-white shadow-glow-md" 
+                  : "bg-white/30 text-white"
+              )}
+              onClick={() => setQuestionType("personal")}
+            >
+              <h3 className="text-xl font-bold mb-2">Personal</h3>
+              <p className="text-sm">Questions about yourself, your experiences and preferences.</p>
+            </motion.div>
+            
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={cn(
+                "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
+                questionType === "general" 
+                  ? "bg-starry-purple text-white shadow-glow-md" 
+                  : "bg-white/30 text-white"
+              )}
+              onClick={() => setQuestionType("general")}
+            >
+              <h3 className="text-xl font-bold mb-2">General Knowledge</h3>
+              <p className="text-sm">Trivia questions about history, science, and the world.</p>
+            </motion.div>
+          </div>
         </motion.div>
 
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 1.3 }}
-          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.5, delay: 1.5 }}
+          whileHover={{ scale: 1.05, boxShadow: "0 0 30px 5px rgba(196, 181, 253, 0.5)" }}
           whileTap={{ scale: 0.95 }}
-          onClick={onStart}
+          onClick={() => onStart()}
           className={cn(
             "bg-white text-starry-purple font-bold text-xl rounded-full px-10 py-4",
             "shadow-glow-lg hover:shadow-glow-lg transition-all duration-300"
