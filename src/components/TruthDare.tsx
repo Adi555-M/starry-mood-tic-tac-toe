@@ -137,7 +137,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     toast({
       title: "Answer Submitted",
       description: `${currentLoser.name} completed their ${selectedType}!`,
-      variant: "success"
+      // Changed from "success" to "default" to fix TypeScript error
+      variant: "default"
     });
   };
 
@@ -206,7 +207,8 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
       description: selectedType === "truth" 
         ? "Thanks for sharing with the group!" 
         : "Great job completing the dare!",
-      variant: "success"
+      // Changed from "success" to "default" to fix TypeScript error
+      variant: "default"
     });
   };
 
