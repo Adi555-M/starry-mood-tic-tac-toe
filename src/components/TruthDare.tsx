@@ -205,7 +205,15 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
 
   const handleNewChallenge = () => {
     if (!selectedType) return;
-    const options = selectedType === "truth" ? truths : dares;
+    
+    // Use the appropriate question set based on questionType and selectedType
+    let options: string[];
+    if (selectedType === "truth") {
+      options = questionType === "personal" ? personalTruths : generalTruths;
+    } else {
+      options = questionType === "personal" ? personalDares : generalDares;
+    }
+    
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
     setAnswering(selectedType === "truth");
@@ -275,7 +283,11 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
   const handleSwitchToDare = () => {
     // Switch from truth to dare if answer is rejected
     setSelectedType("dare");
-    const randomDare = dares[Math.floor(Math.random() * dares.length)];
+    
+    // Use the appropriate dare set based on questionType
+    const dareOptions = questionType === "personal" ? personalDares : generalDares;
+    const randomDare = dareOptions[Math.floor(Math.random() * dareOptions.length)];
+    
     setChallenge(randomDare);
     setAnswer("");
     setAnswering(false);
