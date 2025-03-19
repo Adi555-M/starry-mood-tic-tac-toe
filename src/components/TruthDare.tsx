@@ -15,14 +15,17 @@ type Player = {
   symbol: string;
 };
 
+type QuestionType = "personal" | "general";
+
 type TruthDareProps = {
   winner: Player | null;
   losers: Player[];
   onNewGame: () => void;
+  questionType: QuestionType;
 };
 
-// Truth and dare questions/tasks
-const truths = [
+// Truth and dare questions/tasks based on question type
+const personalTruths = [
   "What's the most embarrassing thing you've ever done?",
   "What's your biggest fear?",
   "What's a secret you've never told anyone?",
@@ -35,7 +38,20 @@ const truths = [
   "What's the weirdest thing you've done when you were alone?",
 ];
 
-const dares = [
+const generalTruths = [
+  "What year did World War II end?",
+  "Who painted the Mona Lisa?",
+  "What is the capital of Australia?",
+  "Which planet is known as the Red Planet?",
+  "Who wrote 'Romeo and Juliet'?",
+  "In what year did Mahatma Gandhi die?",
+  "What is the largest ocean on Earth?",
+  "Who was the first person to walk on the moon?",
+  "What is the chemical symbol for gold?",
+  "Who invented the telephone?",
+];
+
+const personalDares = [
   "Do your best impression of another player",
   "Let another player post anything they want on your social media",
   "Call someone and sing them Happy Birthday, even if it's not their birthday",
@@ -48,7 +64,20 @@ const dares = [
   "Do your best dance move right now",
 ];
 
-const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
+const generalDares = [
+  "Name 10 countries in 20 seconds",
+  "Recite the alphabet backwards within 30 seconds",
+  "Name 5 elements from the periodic table in 15 seconds",
+  "Balance a book on your head and walk across the room",
+  "Draw a recognizable animal with your eyes closed",
+  "Solve a simple math problem like 17 x 13 without a calculator",
+  "Name 8 different types of fruit in 20 seconds",
+  "Build a house of cards with at least two levels",
+  "List the last 5 presidents or prime ministers in order",
+  "Try to juggle 3 items for at least 10 seconds",
+];
+
+const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questionType }) => {
   const { toast } = useToast();
   const [gameMode, setGameMode] = useState<"waiting" | "group" | "individual">("waiting");
   const [currentLoser, setCurrentLoser] = useState<Player | null>(null);
@@ -81,7 +110,15 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
 
   const handleTypeSelect = (type: "truth" | "dare") => {
     setSelectedType(type);
-    const options = type === "truth" ? truths : dares;
+    
+    // Use the appropriate question set based on questionType
+    let options: string[];
+    if (type === "truth") {
+      options = questionType === "personal" ? personalTruths : generalTruths;
+    } else {
+      options = questionType === "personal" ? personalDares : generalDares;
+    }
+    
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
     setAnswering(type === "truth");

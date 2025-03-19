@@ -4,15 +4,19 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 
-type StartScreenProps = {
-  onStart: () => void;
-};
-
 type QuestionType = "personal" | "general";
 
-const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
-  const [questionType, setQuestionType] = useState<QuestionType>("personal");
+type StartScreenProps = {
+  onStart: () => void;
+  onQuestionTypeSelect: (type: QuestionType) => void;
+  selectedQuestionType: QuestionType;
+};
 
+const StartScreen: React.FC<StartScreenProps> = ({ 
+  onStart, 
+  onQuestionTypeSelect,
+  selectedQuestionType
+}) => {
   // Create an array of random stars for the background effect
   const stars = Array.from({ length: 50 }, (_, i) => ({
     id: i,
@@ -146,11 +150,11 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
               whileTap={{ scale: 0.95 }}
               className={cn(
                 "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
-                questionType === "personal" 
+                selectedQuestionType === "personal" 
                   ? "bg-starry-purple text-white shadow-glow-md" 
                   : "bg-white/30 text-white"
               )}
-              onClick={() => setQuestionType("personal")}
+              onClick={() => onQuestionTypeSelect("personal")}
             >
               <h3 className="text-xl font-bold mb-2">Personal</h3>
               <p className="text-sm">Questions about yourself, your experiences and preferences.</p>
@@ -161,11 +165,11 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
               whileTap={{ scale: 0.95 }}
               className={cn(
                 "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
-                questionType === "general" 
+                selectedQuestionType === "general" 
                   ? "bg-starry-purple text-white shadow-glow-md" 
                   : "bg-white/30 text-white"
               )}
-              onClick={() => setQuestionType("general")}
+              onClick={() => onQuestionTypeSelect("general")}
             >
               <h3 className="text-xl font-bold mb-2">General Knowledge</h3>
               <p className="text-sm">Trivia questions about history, science, and the world.</p>

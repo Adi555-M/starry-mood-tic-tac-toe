@@ -50,11 +50,20 @@ const Index = () => {
     setLosers([]);
   };
 
+  const handleQuestionTypeSelect = (type: QuestionType) => {
+    setQuestionType(type);
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-white via-purple-50 to-blue-50">
       <AnimatePresence mode="wait">
         {gameState === "start" && (
-          <StartScreen key="start-screen" onStart={handleStartGame} />
+          <StartScreen 
+            key="start-screen" 
+            onStart={handleStartGame} 
+            onQuestionTypeSelect={handleQuestionTypeSelect}
+            selectedQuestionType={questionType}
+          />
         )}
         
         {gameState === "selection" && (
