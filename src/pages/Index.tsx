@@ -15,14 +15,12 @@ type Player = {
 };
 
 type GameState = "start" | "selection" | "playing" | "end";
-type QuestionType = "personal" | "general";
 
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>("start");
   const [players, setPlayers] = useState<Player[]>([]);
   const [winner, setWinner] = useState<Player | null>(null);
   const [losers, setLosers] = useState<Player[]>([]);
-  const [questionType, setQuestionType] = useState<QuestionType>("personal");
 
   const handleStartGame = () => {
     setGameState("selection");
@@ -51,10 +49,6 @@ const Index = () => {
     setLosers([]);
   };
 
-  const handleQuestionTypeSelect = (type: QuestionType) => {
-    setQuestionType(type);
-  };
-
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-white via-purple-50 to-blue-50">
       <AnimatePresence mode="wait">
@@ -62,8 +56,6 @@ const Index = () => {
           <StartScreen 
             key="start-screen" 
             onStart={handleStartGame} 
-            onQuestionTypeSelect={handleQuestionTypeSelect}
-            selectedQuestionType={questionType}
           />
         )}
         
@@ -83,7 +75,6 @@ const Index = () => {
             winner={winner}
             losers={losers}
             onNewGame={handleNewGame}
-            questionType={questionType}
           />
         )}
       </AnimatePresence>

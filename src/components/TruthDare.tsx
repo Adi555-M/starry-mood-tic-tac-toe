@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, X, RotateCcw, Award, Send, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Sparkles, X, RotateCcw, Award, Send, ThumbsUp, ThumbsDown, MessageSquare, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import confetti from 'canvas-confetti';
 
@@ -17,8 +17,9 @@ type TruthDareProps = {
   winner: Player | null;
   losers: Player[];
   onNewGame: () => void;
-  questionType: "personal" | "general";
 };
+
+type QuestionType = "personal" | "general";
 
 // Truth questions for personal category
 const personalTruths = [
@@ -73,6 +74,7 @@ const personalDares = [
   "Take a silly selfie and show everyone",
   "Show your camera roll",
   "Let someone go through your browser history",
+  "Let someone go through your browser history",
   "Show your screen time report",
   "Do a handstand or attempt to",
 ];
@@ -96,7 +98,7 @@ const generalDares = [
   "Recite a famous poem or quote from memory",
 ];
 
-const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questionType }) => {
+const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
   const [selectedLoser, setSelectedLoser] = useState<Player | null>(null);
   const [selectedType, setSelectedType] = useState<"truth" | "dare" | null>(null);
   const [challenge, setChallenge] = useState<string>("");
@@ -104,6 +106,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
   const [answering, setAnswering] = useState<boolean>(false);
   const [accepted, setAccepted] = useState<boolean | null>(null);
   const [completed, setCompleted] = useState<boolean>(false);
+  const [questionType, setQuestionType] = useState<QuestionType>("personal");
 
   const triggerConfetti = () => {
     // Trigger confetti effect for the winner
@@ -258,6 +261,10 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
     setCompleted(false);
   };
 
+  const handleQuestionTypeSelect = (type: QuestionType) => {
+    setQuestionType(type);
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-gradient-to-br from-purple-50 via-blue-50 to-blue-100">
       {winner && (
@@ -317,7 +324,9 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
             <h3 className="text-2xl font-semibold text-green-700 mb-4">
               Challenge {selectedLoser.name} with:
             </h3>
-            <div className="flex justify-center gap-4">
+            
+            {/* Truth or Dare Selection */}
+            <div className="flex justify-center gap-4 mb-8">
               <motion.button
                 className="bg-yellow-200 hover:bg-yellow-300 text-yellow-700 font-bold py-2 px-4 rounded shadow"
                 onClick={() => selectType("truth")}
@@ -334,6 +343,66 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame, questi
               >
                 Dare
               </motion.button>
+            </div>
+            
+            {/* Question Type Selection - Moved from home page */}
+            <div className="glass-card p-6 rounded-xl bg-white/20 backdrop-blur-md max-w-2xl w-full mb-4">
+              <h2 className="text-xl font-bold mb-4 text-center text-gray-800">Question Options</h2>
+              <p className="text-gray-700 text-center mb-6">Choose the type of questions for truth or dare challenges:</p>
+              
+              <div className="flex flex-wrap gap-4 justify-center">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)] flex flex-col items-center",
+                    questionType === "personal" 
+                      ? "bg-purple-200 text-purple-700 shadow-md" 
+                      : "bg-white/70 text-gray-700"
+                  )}
+                  onClick={() => handleQuestionTypeSelect("personal")}
+                >
+                  <MessageSquare size={32} className="mb-3" />
+                  <h3 className="text-lg font-bold mb-2">Personal</h3>
+                  <p className="text-sm opacity-90">Questions about yourself, your experiences and preferences</p>
+                  
+                  {questionType === "personal" && (
+                    <motion.div 
+                      initial={{ scale: 0 }} 
+                      animate={{ scale: 1 }}
+                      className="mt-3 bg-purple-300 px-3 py-1 rounded-full text-xs font-semibold"
+                    >
+                      Selected
+                    </motion.div>
+                  )}
+                </motion.div>
+                
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={cn(
+                    "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)] flex flex-col items-center",
+                    questionType === "general" 
+                      ? "bg-blue-200 text-blue-700 shadow-md" 
+                      : "bg-white/70 text-gray-700"
+                  )}
+                  onClick={() => handleQuestionTypeSelect("general")}
+                >
+                  <Lightbulb size={32} className="mb-3" />
+                  <h3 className="text-lg font-bold mb-2">General Knowledge</h3>
+                  <p className="text-sm opacity-90">Trivia questions about history, science, and the world</p>
+                  
+                  {questionType === "general" && (
+                    <motion.div 
+                      initial={{ scale: 0 }} 
+                      animate={{ scale: 1 }}
+                      className="mt-3 bg-blue-300 px-3 py-1 rounded-full text-xs font-semibold"
+                    >
+                      Selected
+                    </motion.div>
+                  )}
+                </motion.div>
+              </div>
             </div>
           </motion.div>
         )}
