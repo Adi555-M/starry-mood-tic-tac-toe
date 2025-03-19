@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -345,7 +346,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
               </motion.button>
             </div>
             
-            {/* Question Type Selection - Moved from home page */}
+            {/* Question Type Selection - Added to Truth and Dare area */}
             <div className="glass-card p-6 rounded-xl bg-white/20 backdrop-blur-md max-w-2xl w-full mb-4">
               <h2 className="text-xl font-bold mb-4 text-center text-gray-800">Question Options</h2>
               <p className="text-gray-700 text-center mb-6">Choose the type of questions for truth or dare challenges:</p>
