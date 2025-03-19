@@ -5,6 +5,7 @@ import StartScreen from "@/components/StartScreen";
 import PlayerSelection from "@/components/PlayerSelection";
 import GameBoard from "@/components/GameBoard";
 import TruthDare from "@/components/TruthDare";
+import { Sparkles } from "lucide-react";
 
 type Player = {
   id: number;
@@ -87,11 +88,11 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Credits Section */}
+      {/* Credits Section - Improved styling */}
       <motion.div 
-        className="w-full text-center py-4 absolute bottom-0 left-0 right-0 backdrop-blur-sm"
-        initial={{ opacity: 0.5 }}
-        whileHover={{ opacity: 1, backgroundColor: "rgba(255, 255, 255, 0.3)" }}
+        className="w-full text-center py-3 absolute bottom-0 left-0 right-0 backdrop-blur-sm bg-white/30"
+        initial={{ opacity: 0.7 }}
+        whileHover={{ opacity: 1, backgroundColor: "rgba(255, 255, 255, 0.5)" }}
         animate={{ 
           y: [0, 5, 0],
           transition: { 
@@ -101,9 +102,16 @@ const Index = () => {
           }
         }}
       >
-        <span className="font-semibold text-sm bg-gradient-to-r from-starry-purple to-starry-brightpurple text-transparent bg-clip-text px-3 py-1.5 rounded-full border border-purple-200">
-          Created by Aaditya Mehta & MARB
-        </span>
+        <motion.div 
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-300 bg-white/50 shadow-glow-sm"
+          whileHover={{ scale: 1.05, boxShadow: "0 0 15px 0 rgba(139, 92, 246, 0.4)" }}
+        >
+          <Sparkles size={16} className="text-starry-purple" />
+          <span className="font-semibold text-sm bg-gradient-to-r from-starry-purple to-starry-brightpurple text-transparent bg-clip-text">
+            Created by Aaditya Mehta & MARB
+          </span>
+          <Sparkles size={16} className="text-starry-purple" />
+        </motion.div>
       </motion.div>
     </div>
   );

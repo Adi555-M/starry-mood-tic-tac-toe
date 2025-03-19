@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { HelpCircle, Lightbulb, MessageSquare, Target } from "lucide-react";
 
 type QuestionType = "personal" | "general";
 
@@ -25,6 +26,9 @@ const StartScreen: React.FC<StartScreenProps> = ({
     left: `${Math.random() * 100}%`,
     delay: Math.random() * 5, // 0-5s delay for animation
   }));
+
+  // State to control how-to-play visibility
+  const [showInstructions, setShowInstructions] = useState(false);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-starry-blue to-starry-purple">
@@ -90,29 +94,30 @@ const StartScreen: React.FC<StartScreenProps> = ({
           </motion.p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1 }}
-          className="max-w-2xl w-full mb-8"
+        {/* How To Play Button */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.9 }}
+          onClick={() => setShowInstructions(!showInstructions)}
+          className="mb-6 flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
         >
-          <motion.div
-            className="backdrop-blur-md bg-white/10 rounded-xl p-6 mb-8 border border-white/20 shadow-glow-md"
-            whileHover={{ 
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              transition: { duration: 0.3 }
-            }}
-            initial={{ opacity: 0.7 }}
-            animate={{ 
-              opacity: [0.7, 0.9, 0.7],
-              y: [0, -5, 0]
-            }}
-            transition={{ 
-              duration: 10, 
-              repeat: Infinity,
-              repeatType: "reverse" 
-            }}
-          >
+          <HelpCircle size={18} />
+          {showInstructions ? "Hide Instructions" : "How To Play"}
+        </motion.button>
+
+        {/* How To Play Section - Animates in and out */}
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ 
+            opacity: showInstructions ? 1 : 0, 
+            height: showInstructions ? "auto" : 0,
+            marginBottom: showInstructions ? 24 : 0
+          }}
+          transition={{ duration: 0.3 }}
+          className="overflow-hidden max-w-2xl w-full"
+        >
+          <div className="backdrop-blur-md bg-white/10 rounded-xl p-6 border border-white/20 shadow-glow-md">
             <h2 className="text-2xl font-bold mb-4 text-center text-white">How to Play</h2>
             <ul className="space-y-3 text-white font-medium">
               <li className="flex items-start">
@@ -132,7 +137,7 @@ const StartScreen: React.FC<StartScreenProps> = ({
                 <span>The winner gets a title, while the losers must face truth or dare challenges!</span>
               </li>
             </ul>
-          </motion.div>
+          </div>
         </motion.div>
 
         <motion.div
@@ -142,38 +147,68 @@ const StartScreen: React.FC<StartScreenProps> = ({
           className="glass-card p-6 rounded-xl bg-white/20 backdrop-blur-md max-w-2xl w-full mb-8"
         >
           <h2 className="text-2xl font-bold mb-4 text-center text-white">Question Options</h2>
-          <p className="text-white/90 text-center mb-4">Choose the type of questions for truth or dare challenges:</p>
+          <p className="text-white/90 text-center mb-6">Choose the type of questions for truth or dare challenges:</p>
           
           <div className="flex flex-wrap gap-4 justify-center">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
+                "p-6 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)] flex flex-col items-center",
                 selectedQuestionType === "personal" 
                   ? "bg-starry-purple text-white shadow-glow-md" 
                   : "bg-white/30 text-white"
               )}
               onClick={() => onQuestionTypeSelect("personal")}
             >
+              <MessageSquare size={36} className="mb-3" />
               <h3 className="text-xl font-bold mb-2">Personal</h3>
-              <p className="text-sm">Questions about yourself, your experiences and preferences.</p>
+              <p className="text-sm opacity-90">Questions about yourself, your experiences and preferences</p>
+              
+              {selectedQuestionType === "personal" && (
+                <motion.div 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }}
+                  className="mt-3 bg-white/20 px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  Selected
+                </motion.div>
+              )}
             </motion.div>
             
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className={cn(
-                "p-4 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)]",
+                "p-6 rounded-xl cursor-pointer transition-all duration-300 w-[calc(50%-8px)] flex flex-col items-center",
                 selectedQuestionType === "general" 
                   ? "bg-starry-purple text-white shadow-glow-md" 
                   : "bg-white/30 text-white"
               )}
               onClick={() => onQuestionTypeSelect("general")}
             >
+              <Lightbulb size={36} className="mb-3" />
               <h3 className="text-xl font-bold mb-2">General Knowledge</h3>
-              <p className="text-sm">Trivia questions about history, science, and the world.</p>
+              <p className="text-sm opacity-90">Trivia questions about history, science, and the world</p>
+              
+              {selectedQuestionType === "general" && (
+                <motion.div 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }}
+                  className="mt-3 bg-white/20 px-3 py-1 rounded-full text-xs font-semibold"
+                >
+                  Selected
+                </motion.div>
+              )}
             </motion.div>
+          </div>
+          
+          <div className="mt-6 text-center">
+            <p className="text-white/80 text-sm">
+              {selectedQuestionType === "personal" 
+                ? "You'll be asked questions about yourself and your personal experiences"
+                : "You'll be challenged with trivia and general knowledge questions"}
+            </p>
           </div>
         </motion.div>
 
