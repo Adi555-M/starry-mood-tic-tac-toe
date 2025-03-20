@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -727,3 +728,159 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                 <p className="text-xs text-gray-500 mt-2 mb-4 text-left">
                   * Please provide a detailed answer (at least 3 lines) to ensure honesty
                 </p>
+              </>
+            ) : (
+              <Textarea
+                placeholder="Type your answer here..."
+                value={answer}
+                onChange={handleAnswerChange}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base"
+              />
+            )}
+            
+            <Button
+              onClick={handleSubmitAnswer}
+              className="mt-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-2"
+            >
+              Submit <Send className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {selectedLoser && challengeMode && selectedType === "truth" && !answering && answer && !completed && (
+          <motion.div
+            key="answer-verification"
+            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
+            variants={answerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <h4 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+              Verify the Answer:
+            </h4>
+            <div className="mb-3 p-3 bg-yellow-50 rounded-lg text-sm sm:text-base text-gray-700">
+              <p className="font-medium">Question:</p>
+              <p>{challenge}</p>
+            </div>
+            <div className="mb-6 p-3 bg-blue-50 rounded-lg text-sm sm:text-base text-gray-700 text-left whitespace-pre-line">
+              <p className="font-medium">Answer:</p>
+              <p>{answer}</p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+              <Button
+                onClick={handleAcceptAnswer}
+                className="bg-green-500 hover:bg-green-600 text-white"
+              >
+                <ThumbsUp className="mr-2 h-4 w-4" /> Accept
+              </Button>
+              <Button
+                onClick={handleRejectAnswer}
+                variant="destructive"
+              >
+                <ThumbsDown className="mr-2 h-4 w-4" /> Reject (Give Dare Instead)
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {selectedLoser && challengeMode && selectedType === "dare" && challenge && !completed && (
+          <motion.div
+            key="dare-challenge"
+            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
+            variants={challengeVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <h4 className="text-lg sm:text-xl font-semibold text-orange-700 mb-4">
+              {challengeMode === "group" ? "Group Dare:" : `${selectedLoser.name}'s Dare:`}
+            </h4>
+            <div className="mb-6 p-4 bg-orange-100 rounded-lg text-md sm:text-lg text-orange-800 font-medium shadow-inner">
+              {challenge}
+            </div>
+            <Button
+              onClick={handleCompleteDare}
+              className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-8 py-2"
+            >
+              Complete Dare <Check className="ml-2 h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {completed && (
+          <motion.div
+            key="completed"
+            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
+            variants={resultVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <h4 className="text-xl sm:text-2xl font-bold text-green-600 mb-4">
+              <Sparkles className="inline-block mr-2 text-yellow-500" />
+              Challenge Completed!
+            </h4>
+            
+            {selectedType === "truth" && accepted ? (
+              <p className="text-gray-700 mb-6">
+                Thank you for your honest answer. Ready for the next challenge?
+              </p>
+            ) : (
+              <p className="text-gray-700 mb-6">
+                Great job completing the dare! Ready for the next challenge?
+              </p>
+            )}
+            
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+              <Button
+                onClick={() => {
+                  setSelectedType(null);
+                  setChallenge("");
+                  setAnswer("");
+                  setAnswering(false);
+                  setAccepted(null);
+                  setCompleted(false);
+                }}
+                className="bg-purple-500 hover:bg-purple-600 text-white"
+              >
+                New Challenge
+              </Button>
+              <Button
+                onClick={() => {
+                  setSelectedLoser(null);
+                  setSelectedType(null);
+                  setChallenge("");
+                  setAnswer("");
+                  setAnswering(false);
+                  setAccepted(null);
+                  setCompleted(false);
+                  setChallengeMode(null);
+                }}
+                variant="outline"
+              >
+                Change Player
+              </Button>
+              <Button
+                onClick={onNewGame}
+                variant="outline"
+                className="border-blue-300 text-blue-600"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" /> New Game
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default TruthDare;
