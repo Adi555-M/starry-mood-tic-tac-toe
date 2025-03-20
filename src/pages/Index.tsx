@@ -81,7 +81,7 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Credits Section - Updated to show only MARB */}
+      {/* Credits Section - Only MARB */}
       <motion.div 
         className={`w-full text-center py-2 absolute bottom-0 left-0 right-0 backdrop-blur-sm bg-white/30 ${isMobile ? 'mb-2' : ''}`}
         initial={{ opacity: 0.7 }}

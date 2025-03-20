@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -321,7 +320,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
     const randomChallenge = options[Math.floor(Math.random() * options.length)];
     setChallenge(randomChallenge);
     
-    // For truth, we now immediately show the answer box without showing the question
+    // For truth, we now immediately show the answer box without showing the question first
     if (selectedType === "truth") {
       setAnswering(true);
     } else {
@@ -501,7 +500,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
         {!selectedLoser && !showWinnerAnnouncement && (
           <motion.div
             key="loser-selection"
-            className="mb-6 sm:mb-8 text-center"
+            className="mb-6 sm:mb-8 text-center w-full max-w-md mx-auto"
             variants={loserVariants}
             initial="hidden"
             animate="visible"
@@ -529,7 +528,7 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
         {selectedLoser && !challengeMode && (
           <motion.div
             key="mode-selection"
-            className="mb-6 sm:mb-8 text-center"
+            className="mb-6 sm:mb-8 text-center w-full max-w-md mx-auto"
             variants={typeVariants}
             initial="hidden"
             animate="visible"
@@ -701,6 +700,13 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
             animate="visible"
             exit="exit"
           >
+            <h4 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+              Your Question:
+            </h4>
+            <div className="mb-4 p-3 bg-white/50 rounded-lg text-sm sm:text-base text-gray-700">
+              {challenge}
+            </div>
+            
             <h4 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Your Answer:</h4>
             
             {answerError && (
@@ -721,169 +727,3 @@ const TruthDare: React.FC<TruthDareProps> = ({ winner, losers, onNewGame }) => {
                 <p className="text-xs text-gray-500 mt-2 mb-4 text-left">
                   * Please provide a detailed answer (at least 3 lines) to ensure honesty
                 </p>
-              </>
-            ) : (
-              <Input
-                type="text"
-                placeholder="Type your answer here..."
-                value={answer}
-                onChange={handleAnswerChange}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm sm:text-base"
-              />
-            )}
-            
-            <div className="mt-4">
-              <motion.button
-                className="bg-purple-300 hover:bg-purple-400 text-purple-800 font-bold py-2 px-4 rounded shadow"
-                onClick={handleSubmitAnswer}
-                variants={buttonVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                Submit <Send className="inline-block ml-2" size={isMobile ? 16 : 20} />
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {selectedLoser && challengeMode && selectedType === "dare" && challenge && !answering && !completed && (
-          <motion.div
-            key="challenge-display"
-            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
-            variants={challengeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
-              Dare:
-            </h4>
-            <div className="bg-white/50 p-3 sm:p-4 rounded-lg shadow-inner mb-4">
-              <p className="text-sm sm:text-md text-gray-700">{challenge}</p>
-            </div>
-            
-            <motion.button
-              className="bg-green-300 hover:bg-green-400 text-green-800 font-bold py-2 px-4 rounded shadow"
-              onClick={handleCompleteDare}
-              variants={buttonVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              Complete <ThumbsUp className="inline-block ml-2" size={isMobile ? 16 : 20} />
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {selectedLoser && challengeMode && selectedType === "truth" && challenge && !answering && challenge && accepted === null && completed === false && (
-          <motion.div
-            key="answer-approval"
-            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
-            variants={challengeVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <h4 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
-              {challengeMode === "group" ? "Group Answer:" : `${selectedLoser.name}'s Answer:`}
-            </h4>
-            <div className="bg-white/50 p-3 sm:p-4 rounded-lg shadow-inner mb-4 text-left whitespace-pre-line">
-              <p className="text-sm sm:text-md text-gray-700">{answer}</p>
-            </div>
-            <div className="flex justify-center gap-3 sm:gap-4">
-              <motion.button
-                className="bg-green-300 hover:bg-green-400 text-green-800 font-bold py-2 px-3 sm:px-4 rounded shadow"
-                onClick={handleAcceptAnswer}
-                variants={buttonVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                Accept <Check className="inline-block ml-1 sm:ml-2" size={isMobile ? 16 : 20} />
-              </motion.button>
-              <motion.button
-                className="bg-red-300 hover:bg-red-400 text-red-800 font-bold py-2 px-3 sm:px-4 rounded shadow"
-                onClick={handleRejectAnswer}
-                variants={buttonVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                Reject <X className="inline-block ml-1 sm:ml-2" size={isMobile ? 16 : 20} />
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence mode="wait">
-        {selectedLoser && challengeMode && selectedType && challenge && completed && (
-          <motion.div
-            key="challenge-result"
-            className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-lg shadow-xl bg-white/80 backdrop-blur-md text-center max-w-md sm:max-w-2xl w-full"
-            variants={resultVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <h4 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-3 sm:mb-4">
-              Challenge Completed!
-            </h4>
-            {accepted === true && (
-              <p className="text-sm sm:text-md text-green-700 mb-3 sm:mb-4">
-                {challengeMode === "group" ? "The group" : selectedLoser.name} successfully answered the truth!
-              </p>
-            )}
-            {accepted === false && (
-              <p className="text-sm sm:text-md text-orange-700 mb-3 sm:mb-4">
-                {challengeMode === "group" ? "The group" : selectedLoser.name} completed the dare!
-              </p>
-            )}
-            {selectedType === "dare" && accepted === null && (
-              <p className="text-sm sm:text-md text-blue-700 mb-3 sm:mb-4">
-                {challengeMode === "group" ? "The group" : selectedLoser.name} completed the dare!
-              </p>
-            )}
-            <motion.button
-              className="bg-blue-300 hover:bg-blue-400 text-blue-800 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-full shadow-md mt-3 sm:mt-4"
-              onClick={onNewGame}
-              whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(59, 130, 246, 0.4)" }}
-              whileTap={{ scale: 0.95 }}
-            >
-              New Game <RotateCcw className="inline-block ml-2" size={isMobile ? 16 : 20} />
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {!winner && !selectedLoser && (
-        <motion.div
-          className="text-center"
-          variants={buttonVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-        >
-          <Button onClick={onNewGame} className="bg-gradient-to-r from-purple-500 to-blue-500 text-white">
-            Start Over
-          </Button>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-export default TruthDare;
