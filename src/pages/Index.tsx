@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import StartScreen from "@/components/StartScreen";
 import PlayerSelection from "@/components/PlayerSelection";
 import GameBoard from "@/components/GameBoard";
 import TruthDare from "@/components/TruthDare";
 import { Sparkles } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Player = {
   id: number;
@@ -21,6 +22,7 @@ const Index = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [winner, setWinner] = useState<Player | null>(null);
   const [losers, setLosers] = useState<Player[]>([]);
+  const isMobile = useIsMobile();
 
   const handleStartGame = () => {
     setGameState("selection");
@@ -64,7 +66,7 @@ const Index = () => {
         )}
         
         {gameState === "playing" && (
-          <div key="game-board" className="min-h-screen w-full py-12 px-4">
+          <div key="game-board" className="min-h-screen w-full py-6 px-2 sm:py-12 sm:px-4">
             <GameBoard players={players} onGameEnd={handleGameEnd} />
           </div>
         )}
@@ -79,9 +81,9 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* Credits Section - Improved styling */}
+      {/* Credits Section - Updated to show only MARB */}
       <motion.div 
-        className="w-full text-center py-3 absolute bottom-0 left-0 right-0 backdrop-blur-sm bg-white/30"
+        className={`w-full text-center py-2 absolute bottom-0 left-0 right-0 backdrop-blur-sm bg-white/30 ${isMobile ? 'mb-2' : ''}`}
         initial={{ opacity: 0.7 }}
         whileHover={{ opacity: 1, backgroundColor: "rgba(255, 255, 255, 0.5)" }}
         animate={{ 
@@ -99,7 +101,7 @@ const Index = () => {
         >
           <Sparkles size={16} className="text-starry-purple" />
           <span className="font-semibold text-sm bg-gradient-to-r from-starry-purple to-starry-brightpurple text-transparent bg-clip-text">
-            Created by Aaditya Mehta & MARB
+            Created by MARB
           </span>
           <Sparkles size={16} className="text-starry-purple" />
         </motion.div>
